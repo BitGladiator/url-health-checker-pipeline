@@ -1,0 +1,30 @@
+stages:
+  - install
+  - lint
+  - test
+  - deploy
+
+variables:
+  NODE_ENV: development
+
+install:
+  stage: install
+  script:
+    - npm ci
+
+lint:
+  stage: lint
+  script:
+    - npm run lint
+
+test:
+  stage: test
+  script:
+    - npm run test
+
+deploy:
+  stage: deploy
+  script:
+    - echo "Deploy stage"
+  only:
+    - main
