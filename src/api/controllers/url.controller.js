@@ -25,6 +25,22 @@ const getUrlStatus = async (req, res) => {
 
   return res.json(JSON.parse(result));
 };
+const getUrlHistory = async (req, res) => {
+  const { url } = req.query;
 
+  if (!url) {
+    return res.status(400).json({ error: 'URL query param is required' });
+  }
 
-module.exports = { submitUrlCheck , getUrlStatus};
+  const key = `url-check:history:${url}`;
+  const items = await redisConnection.lrange(key, 0, -1);
+
+  if (!items.length) {
+    return res.status(404).json({ message: 'No history found for this URL' });
+  }
+
+  const results = items.map(item => JSON.parse(item));
+  return res.json({ url, count: results.length, history: results });
+};
+
+module.exports = { submitUrlCheck , getUrlStatus, getUrlHistory };

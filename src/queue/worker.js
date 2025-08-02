@@ -1,3 +1,4 @@
+// src/queue/worker.js
 const { Worker } = require('bullmq');
 const axios = require('axios');
 const { redisConnection } = require('../config/redis');
@@ -5,7 +6,7 @@ const { redisConnection } = require('../config/redis');
 const createWorker = () => {
   const worker = new Worker('url-check-queue', async job => {
     const { url } = job.data;
-    const resultKey = `url-check:${url}`;
+    const key = `url-check:history:${url}`;
 
     try {
       const start = Date.now();
@@ -19,12 +20,13 @@ const createWorker = () => {
         timestamp: new Date().toISOString()
       };
 
-      await redisConnection.set(resultKey, JSON.stringify(result));
-      console.log(`[${url}] Saved result to Redis`);
+      await redisConnection.lpush(key, JSON.stringify(result));
+      await redisConnection.ltrim(key, 0, 9); // Keep only last 10 entries
+
+      console.log(`[${url}] Logged to history`);
 
     } catch (error) {
       const status = error.response?.status || 'NO_RESPONSE';
-
       const result = {
         url,
         status,
@@ -32,8 +34,10 @@ const createWorker = () => {
         timestamp: new Date().toISOString()
       };
 
-      await redisConnection.set(resultKey, JSON.stringify(result));
-      console.log(`[${url}] Error saved to Redis`);
+      await redisConnection.lpush(key, JSON.stringify(result));
+      await redisConnection.ltrim(key, 0, 9);
+
+      console.log(`[${url}] Error logged to history`);
     }
   }, {
     connection: redisConnection
