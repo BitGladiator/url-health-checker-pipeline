@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>URL Health Checker</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/@tailwindcss/ui@0.7.2/dist/tailwind-ui.min.css"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  </head>
+  <body class="bg-gray-100 text-gray-800 p-6">
+    <div class="max-w-xl mx-auto bg-white rounded-xl shadow-lg p-8">
+      <h1 class="text-2xl font-bold mb-6 text-center">URL Health Checker</h1>
+
+      <div class="flex items-center space-x-2 mb-6">
+        <input
+          id="urlInput"
+          type="text"
+          placeholder="https://example.com"
+          class="flex-1 border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        <button
+          onclick="checkUrl()"
+          class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+        >
+          Check
+        </button>
+      </div>
+
+      <div id="statusResult" class="mb-6"></div>
+      <div id="historyResult"></div>
+
+      <!-- Chart Section (Hidden by default) -->
+      <div id="chartContainer" class="hidden">
+        <h2 class="text-xl font-semibold mb-2 mt-6">📈 Response Time Chart</h2>
+        <canvas id="historyChart" class="w-full h-64"></canvas>
+      </div>
+    </div>
+
+    <script>
+      async function checkUrl() {
+        const url = document.getElementById("urlInput").value;
+        if (!url) return alert("Please enter a URL");
+
+        document.getElementById("statusResult").innerHTML =
+          '<p class="text-yellow-500">Checking...</p>';
+        document.getElementById("historyResult").innerHTML = "";
+        document.getElementById("chartContainer").classList.add("hidden");
+
+        await fetch("/url/check", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url }),
+        });
+
+        await new Promise((r) => setTimeout(r, 1500));
+
+        try {
+          const res = await fetch(`/url/status?url=${encodeURIComponent(url)}`);
+          const status = await res.json();
+
+          const isSuccess = status.status >= 200 && status.status < 400;
+          const boxColor = isSuccess ? "green" : "red";
+
+          document.getElementById("statusResult").innerHTML = `
+            <div class="p-4 bg-${boxColor}-100 border-l-4 border-${boxColor}-500 text-${boxColor}-700">
+              <p><strong>Status:</strong> ${status.status || "N/A"}</p>
+              <p><strong>Duration:</strong> ${status.duration || "-"} ms</p>
+              <p><strong>Checked At:</strong> ${new Date(status.timestamp).toLocaleString()}</p>
+            </div>
+          `;
+
+          const historyRes = await fetch(
+            `/url/history?url=${encodeURIComponent(url)}`
+          );
+          const historyData = await historyRes.json();
+
+          let html = `<h2 class="text-xl font-semibold mb-2 mt-6">Last ${
+            historyData.count || 0
+          } Checks</h2>`;
+          for (let entry of historyData.history || []) {
+            html += `
+              <div class="bg-gray-50 p-3 mb-2 rounded border">
+                <p><strong>Status:</strong> ${entry.status}</p>
+                <p><strong>Duration:</strong> ${entry.duration || "-"} ms</p>
+                <p><strong>Checked At:</strong> ${new Date(entry.timestamp).toLocaleString()}</p>
+              </div>
+            `;
+          }
+
+          document.getElementById("historyResult").innerHTML = html;
+
+          // Show chart container
+          document.getElementById("chartContainer").classList.remove("hidden");
+
+          //  Draw chart
+          const labels = (historyData.history || []).map((entry) =>
+            new Date(entry.timestamp).toLocaleTimeString()
+          );
+          const durations = (historyData.history || []).map(
+            (entry) => entry.duration || 0
+          );
+
+          if (window.myChart) {
+            window.myChart.destroy();
+          }
+
+          const ctx = document.getElementById("historyChart").getContext("2d");
+          window.myChart = new Chart(ctx, {
+            type: "line",
+            data: {
+              labels: labels,
+              datasets: [
+                {
+                  label: "Response Time (ms)",
+                  data: durations,
+                  fill: false,
+                  borderColor: "#3b82f6",
+                  backgroundColor: "#3b82f6",
+                  tension: 0.3,
+                  pointRadius: 5,
+                  pointBackgroundColor: durations.map((d) =>
+                    d > 0 ? "#3b82f6" : "#ef4444"
+                  ),
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  title: {
+                    display: true,
+                    text: "Duration (ms)",
+                  },
+                },
+                x: {
+                  title: {
+                    display: true,
+                    text: "Time",
+                  },
+                },
+              },
+            },
+          });
+        } catch (err) {
+          document.getElementById("statusResult").innerHTML = `
+            <div class="text-red-600">Could not retrieve status.</div>
+          `;
+        }
+      }
+    </script>
+  </body>
+</html>

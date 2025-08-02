@@ -17,14 +17,16 @@ const getUrlStatus = async (req, res) => {
     return res.status(400).json({ error: 'URL query param is required' });
   }
 
-  const result = await redisConnection.get(`url-check:${url}`);
+  const key = `url-check:history:${url}`;
+  const latest = await redisConnection.lindex(key, 0); 
 
-  if (!result) {
+  if (!latest) {
     return res.status(404).json({ message: 'No result found for this URL' });
   }
 
-  return res.json(JSON.parse(result));
+  return res.json(JSON.parse(latest));
 };
+
 const getUrlHistory = async (req, res) => {
   const { url } = req.query;
 
