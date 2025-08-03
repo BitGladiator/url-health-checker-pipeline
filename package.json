@@ -6,8 +6,8 @@
     "scripts": {
         "dev": "nodemon src/server.js",
         "start": "node src/server.js",
-        "lint": "eslint .",
-        "test": "jest"
+        "lint": "eslint . --config eslint.config.mjs",
+        "test": "jest --ci"
     },
     "keywords": [
         "url",

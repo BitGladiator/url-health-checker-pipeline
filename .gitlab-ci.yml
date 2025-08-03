@@ -1,5 +1,7 @@
+image: node:20
+
 stages:
-  - install
+  - setup
   - lint
   - test
   - deploy
@@ -7,24 +9,50 @@ stages:
 variables:
   NODE_ENV: development
 
-install:
-  stage: install
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - node_modules/
+    - .eslintcache
+
+setup:
+  stage: setup
   script:
     - npm ci
+    - npm install eslint@8.57.1 @eslint/js@8.57.1 globals eslint-plugin-jest@27.6.0 jest-junit@16.0.0
+  artifacts:
+    paths:
+      - node_modules/
+    expire_in: 1 hour
 
 lint:
   stage: lint
+  dependencies:
+    - setup
   script:
     - npm run lint
+  cache:
+    policy: pull
 
 test:
   stage: test
+  dependencies:
+    - setup
   script:
     - npm run test
+  artifacts:
+    when: always
+    reports:
+      junit: junit.xml
+    paths:
+      - coverage/
+  cache:
+    policy: pull
 
 deploy:
   stage: deploy
+  dependencies: []
   script:
-    - echo "Deploy stage"
+    - echo "Deploying to production..."
   only:
     - main
