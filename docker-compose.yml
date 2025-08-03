@@ -1,0 +1,42 @@
+services:
+  redis:
+    image: redis:6
+    ports:
+      - "6379:6379"
+    networks:
+      - monitor-net
+
+  prometheus:
+    image: prom/prometheus
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    networks:
+      - monitor-net
+
+  grafana:
+    image: grafana/grafana
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    networks:
+      - monitor-net
+
+  backend:
+    build: .
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+    depends_on:
+      - redis
+    environment:
+      - REDIS_URL=redis://redis:6379
+    networks:
+      - monitor-net
+
+networks:
+  monitor-net:
