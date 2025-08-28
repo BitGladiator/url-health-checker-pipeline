@@ -1,23 +1,27 @@
-// Import BullMQ Worker, Redis connection, Prometheus metric, HTTP client, and logger
 const { Worker } = require('bullmq');
 const { redisConnection } = require('../config/redis');
 const { httpDuration } = require('../metrics/prometheus');
+const { sendEmailAlert } = require('../config/email');
+const { MonitoredUrl } = require('../models/monitoredUrl');
 const httpClient = require('../utils/httpClient');
 const logger = require('../utils/logger');
 
-// Function to create and start a BullMQ worker
 const createWorker = () => {
-  // Define the worker to process jobs from the 'url-check-queue'
   const worker = new Worker('url-check-queue', async job => {
-    const { url } = job.data; // Extract URL from job data
-    const key = `url-check:history:${url}`; // Redis key for storing URL check history
+    const { url, monitoredUrlId } = job.data;
+    const key = `url-check:history:${url}`;
+
+    // Get monitored URL config if available
+    let monitoredUrl = null;
+    if (monitoredUrlId) {
+      monitoredUrl = await MonitoredUrl.getById(monitoredUrlId);
+    }
 
     try {
-      const start = Date.now(); // Start timing the request
-      const response = await httpClient.get(url); // Send HTTP GET request using wrapped Axios
-      const duration = Date.now() - start; // Calculate duration
+      const start = Date.now();
+      const response = await httpClient.get(url);
+      const duration = Date.now() - start;
 
-      // Build success result object
       const result = {
         url,
         status: response.status,
@@ -25,21 +29,30 @@ const createWorker = () => {
         timestamp: new Date().toISOString(),
       };
 
-      // Save result to Redis (push to list) and keep only last 10 entries
+      // Save to Redis history
       await redisConnection.lpush(key, JSON.stringify(result));
       await redisConnection.ltrim(key, 0, 9);
 
-      // Log success
-      logger.info(`[${url}] Success: ${response.status} in ${duration}ms`);
+      // Update monitored URL status
+      if (monitoredUrl) {
+        await monitoredUrl.updateFailureCount(false);
+        
+        // Send recovery email if this was previously down
+        if (monitoredUrl.consecutiveFailures > 0) {
+          await sendEmailAlert(url, 'RECOVERED', {
+            httpStatus: response.status,
+            responseTime: duration,
+            wasDownFor: `${monitoredUrl.consecutiveFailures} consecutive checks`
+          });
+        }
+      }
 
-      // Record duration in Prometheus (convert ms to seconds)
+      logger.info(`[${url}] Success: ${response.status} in ${duration}ms`);
       httpDuration.labels(url, response.status).observe(duration / 1000);
 
     } catch (error) {
-      // Extract status if available, or use fallback
       const status = error.response?.status || 'NO_RESPONSE';
-
-      // Build error result object
+      
       const result = {
         url,
         status,
@@ -47,30 +60,47 @@ const createWorker = () => {
         timestamp: new Date().toISOString(),
       };
 
-      // Save error result to Redis and keep only last 10 entries
+      // Save error to Redis
       await redisConnection.lpush(key, JSON.stringify(result));
       await redisConnection.ltrim(key, 0, 9);
 
-      // Log error
-      logger.error(`[${url}] Error: ${status} - ${error.message}`);
+      // Handle monitored URL failure
+      if (monitoredUrl) {
+        await monitoredUrl.updateFailureCount(true);
+        
+        // Send alert email for failures (avoid spam by limiting frequency)
+        const shouldAlert = (
+          monitoredUrl.consecutiveFailures === 1 || // First failure
+          monitoredUrl.consecutiveFailures === 3 || // After 3 consecutive
+          monitoredUrl.consecutiveFailures % 10 === 0 // Every 10 failures
+        );
 
-      // Record failed duration as 0 in Prometheus
+        if (shouldAlert) {
+          await sendEmailAlert(url, 'DOWN', {
+            error: error.message,
+            httpStatus: status,
+            consecutiveFailures: monitoredUrl.consecutiveFailures
+          });
+        }
+      }
+
+      logger.error(`[${url}] Error: ${status} - ${error.message}`);
       httpDuration.labels(url, status).observe(0);
     }
   }, {
-    connection: redisConnection, // Redis connection for the worker
+    connection: redisConnection,
+    concurrency: 5 // Process up to 5 jobs simultaneously
   });
 
-  // Event listener for successful job completion
   worker.on('completed', job => {
     logger.info(`Job ${job.id} completed`);
   });
 
-  // Event listener for job failure
   worker.on('failed', (job, err) => {
     logger.error(`Job ${job.id} failed: ${err.message}`);
   });
+
+  return worker;
 };
 
-// Export the function to be used in app entry point
 module.exports = { createWorker };

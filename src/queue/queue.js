@@ -6,8 +6,8 @@ const { redisConnection } = require('../config/redis');
 const urlCheckQueue = new Queue('url-check-queue', { connection: redisConnection });
 
 // Function to add a new URL check job to the queue
-const addUrlToQueue = async (url) => {
-  await urlCheckQueue.add('check-url', { url }); // Job name: 'check-url', payload: { url }
+const addUrlToQueue = async (url, additionalData = {}) => {
+  await urlCheckQueue.add('check-url', { url, ...additionalData });
 };
 
 // Export the queue instance and the job-adding function

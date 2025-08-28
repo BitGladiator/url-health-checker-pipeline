@@ -1,8 +1,23 @@
-const { Redis } = require('ioredis');
+const Redis = require('ioredis');
 
-const redisConnection = new Redis({
-  host: process.env.REDIS_HOST || 'redis', // Use Docker service name here
-  port: process.env.REDIS_PORT || 6379
+let redisConnection;
+
+if (process.env.REDIS_URL) {
+  console.log(`🔗 Connecting via URL: ${process.env.REDIS_URL}`);
+  redisConnection = new Redis(process.env.REDIS_URL);
+} else {
+  const host = process.env.REDIS_HOST || 'redis';
+  const port = process.env.REDIS_PORT || 6379;
+  console.log(`🔗 Connecting via host=${host}, port=${port}`);
+  redisConnection = new Redis({ host, port });
+}
+
+redisConnection.on('connect', () => {
+  console.log('✅ Connected to Redis');
 });
 
-module.exports = { redisConnection };
+redisConnection.on('error', (err) => {
+  console.error('❌ Redis connection error:', err);
+});
+
+module.exports = redisConnection;
