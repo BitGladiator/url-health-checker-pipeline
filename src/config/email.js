@@ -5,7 +5,7 @@ const isEmailConfigured = () => {
   return !!(process.env.EMAIL_USER && process.env.EMAIL_APP_PASSWORD);
 };
 
-// Email configuration
+// Email configuration - Fixed typo from createEmailTransporter to createTransporter
 const createEmailTransporter = () => {
   if (!isEmailConfigured()) {
     console.warn('⚠️  Email credentials not configured. Email alerts will be disabled.');
@@ -13,7 +13,7 @@ const createEmailTransporter = () => {
   }
 
   try {
-    return nodemailer.createTransporter({
+    return nodemailer.createTransport({
       service: 'gmail', // You can use other services like 'outlook', 'yahoo', etc.
       auth: {
         user: process.env.EMAIL_USER, // Your email address
@@ -105,6 +105,10 @@ const testEmailConfig = async () => {
 
   try {
     const transporter = createEmailTransporter();
+    if (!transporter) {
+      return { success: false, message: 'Failed to create email transporter' };
+    }
+    
     await transporter.verify();
     return { success: true, message: 'Email configuration is valid' };
   } catch (error) {

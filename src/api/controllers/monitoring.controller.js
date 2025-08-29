@@ -1,7 +1,7 @@
 const { MonitoredUrl } = require('../../models/monitoredUrl');
 const { cronScheduler } = require('../../scheduler/cronJobs');
-// Fix: Import redisConnection correctly (no destructuring)
-const redisConnection = require('../../config/redis');
+// Fix: Import redisConnection correctly (with destructuring)
+const { redisConnection } = require('../../config/redis');
 
 // Add a URL to monitoring
 const addMonitoredUrl = async (req, res) => {
@@ -90,7 +90,7 @@ const removeMonitoredUrl = async (req, res) => {
     // Stop the cron job
     cronScheduler.stopJob(id);
     
-    // Remove from Redis - now redisConnection should work correctly
+    // Remove from Redis - now using correct redisConnection with destructuring
     await redisConnection.del(`monitored:${id}`);
     await redisConnection.srem('monitored:active', id);
 
