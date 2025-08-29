@@ -1,20 +1,50 @@
 const nodemailer = require('nodemailer');
 
+// Check if email credentials are configured
+const isEmailConfigured = () => {
+  return !!(process.env.EMAIL_USER && process.env.EMAIL_APP_PASSWORD);
+};
+
 // Email configuration
 const createEmailTransporter = () => {
-  return nodemailer.createTransporter({
-    service: 'gmail', // You can use other services like 'outlook', 'yahoo', etc.
-    auth: {
-      user: process.env.EMAIL_USER, // Your email address
-      pass: process.env.EMAIL_APP_PASSWORD // App password (not regular password)
-    }
-  });
+  if (!isEmailConfigured()) {
+    console.warn('⚠️  Email credentials not configured. Email alerts will be disabled.');
+    return null;
+  }
+
+  try {
+    return nodemailer.createTransporter({
+      service: 'gmail', // You can use other services like 'outlook', 'yahoo', etc.
+      auth: {
+        user: process.env.EMAIL_USER, // Your email address
+        pass: process.env.EMAIL_APP_PASSWORD // App password (not regular password)
+      },
+      // Add some additional options for better reliability
+      secure: true, // Use SSL
+      tls: {
+        rejectUnauthorized: false
+      }
+    });
+  } catch (error) {
+    console.error('Failed to create email transporter:', error);
+    return null;
+  }
 };
 
 // Send email alert function
 const sendEmailAlert = async (url, status, details = {}) => {
   try {
+    // Check if email is configured
+    if (!isEmailConfigured()) {
+      console.log(`📧 Email not configured - would send alert: ${url} is ${status}`);
+      return false;
+    }
+
     const transporter = createEmailTransporter();
+    if (!transporter) {
+      console.error('📧 Email transporter not available');
+      return false;
+    }
     
     const isDown = status === 'DOWN';
     const subject = `🚨 Alert: ${url} is ${status}`;
@@ -48,20 +78,42 @@ const sendEmailAlert = async (url, status, details = {}) => {
       </div>
     `;
 
+    const recipient = details.alertEmail || process.env.ALERT_EMAIL || process.env.EMAIL_USER;
+
     const mailOptions = {
       from: process.env.EMAIL_USER,
-      to: process.env.ALERT_EMAIL || process.env.EMAIL_USER, // Who receives alerts
+      to: recipient,
       subject: subject,
       html: htmlContent
     };
 
     await transporter.sendMail(mailOptions);
-    console.log(`📧 Alert email sent for ${url} - Status: ${status}`);
+    console.log(`📧 Alert email sent for ${url} - Status: ${status} to ${recipient}`);
+    return true;
     
   } catch (error) {
-    console.error('Failed to send email alert:', error);
+    console.error('📧 Failed to send email alert:', error.message);
+    return false;
   }
 };
 
-module.exports = { sendEmailAlert };
+// Test email configuration
+const testEmailConfig = async () => {
+  if (!isEmailConfigured()) {
+    return { success: false, message: 'Email credentials not configured' };
+  }
 
+  try {
+    const transporter = createEmailTransporter();
+    await transporter.verify();
+    return { success: true, message: 'Email configuration is valid' };
+  } catch (error) {
+    return { success: false, message: `Email config error: ${error.message}` };
+  }
+};
+
+module.exports = { 
+  sendEmailAlert, 
+  isEmailConfigured, 
+  testEmailConfig 
+};

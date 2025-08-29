@@ -35,6 +35,9 @@ services:
       - redis
     environment:
       - REDIS_URL=redis://redis:6379
+      - EMAIL_USER=${EMAIL_USER}
+      - EMAIL_APP_PASSWORD=${EMAIL_APP_PASSWORD}
+      - ALERT_EMAIL=${ALERT_EMAIL}
     networks:
       - monitor-net
 

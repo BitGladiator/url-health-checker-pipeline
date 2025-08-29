@@ -1,7 +1,7 @@
-const redisConnection = require('../config/redis');
+const {redisConnection} = require('../config/redis');
 
 class MonitoredUrl {
-  constructor(data) {
+  constructor(data) { // id, url, name, checkInterval, isActive, alertEmail, expectedStatus
     this.id = data.id || `url_${Date.now()}`;
     this.url = data.url;
     this.name = data.name || data.url;
