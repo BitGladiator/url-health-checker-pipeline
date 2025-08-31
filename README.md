@@ -1,4 +1,4 @@
-# 🌐 URL Health Checker
+# URL Health Checker
 
 <div align="center">
   <img src="https://img.shields.io/badge/Node.js-43853D?style=for-the-badge&logo=node.js&logoColor=white" alt="Node.js" />
@@ -10,77 +10,77 @@
 </div>
 
 <div align="center">
-  <h3>🚀 Enterprise-Grade URL Monitoring with Real-Time Alerts</h3>
+  <h3>Enterprise-Grade URL Monitoring with Real-Time Alerts</h3>
   <p>A robust, scalable microservice for monitoring website health with intelligent alerting, comprehensive metrics, and beautiful visualizations.</p>
 </div>
 
 ---
 
-## 📋 Table of Contents
+## Table of Contents
 
-- [✨ Features](#-features)
-- [🏗️ Architecture](#️-architecture)
-- [🚀 Quick Start](#-quick-start)
-- [🔧 Configuration](#-configuration)
-- [📊 Monitoring & Observability](#-monitoring--observability)
-- [📧 Email Alerts](#-email-alerts)
-- [🔌 API Reference](#-api-reference)
-- [🐳 Docker Deployment](#-docker-deployment)
-- [🧪 Testing](#-testing)
-- [🛠️ Development](#️-development)
-- [📈 Performance](#-performance)
-- [🤝 Contributing](#-contributing)
-
----
-
-## ✨ Features
-
-### 🎯 **Core Functionality**
-- **⚡ Real-time URL Health Checks** - Instant website status verification
-- **📊 Automated Monitoring** - Continuous background health monitoring
-- **🔔 Smart Alerts** - Intelligent email notifications with failure escalation
-- **📈 Historical Analytics** - Response time trends and uptime statistics
-- **🎨 Beautiful Dashboard** - Modern, responsive web interface
-
-### 🏗️ **Enterprise Architecture**
-- **🔄 Asynchronous Processing** - Queue-based architecture with BullMQ
-- **📊 Observability Stack** - Prometheus metrics + Grafana dashboards
-- **🗄️ Redis Persistence** - Fast, reliable data storage
-- **🐳 Containerized** - Full Docker Compose setup
-- **🚀 CI/CD Ready** - GitLab pipeline with automated testing
-
-### 🧠 **Intelligent Features**
-- **📧 Progressive Alerting** - Reduces alert fatigue with smart escalation
-- **📱 Recovery Notifications** - Get notified when services come back online
-- **⏱️ Configurable Intervals** - Custom check frequencies (2-30 minutes)
-- **🎯 Expected Status Codes** - Define what "healthy" means for each URL
-- **🏷️ URL Tagging** - Organize monitoring with custom tags
+- [Features](#-features)
+- [Architecture](#️-architecture)
+- [Quick Start](#-quick-start)
+- [Configuration](#-configuration)
+- [Monitoring & Observability](#-monitoring--observability)
+- [Email Alerts](#-email-alerts)
+- [API Reference](#-api-reference)
+- [Docker Deployment](#-docker-deployment)
+- [Testing](#-testing)
+- [Development](#️-development)
+- [Performance](#-performance)
+- [Contributing](#-contributing)
 
 ---
 
-## 🏗️ Architecture
+##Features
+
+###  **Core Functionality**
+- **Real-time URL Health Checks** - Instant website status verification
+- **Automated Monitoring** - Continuous background health monitoring
+- **Smart Alerts** - Intelligent email notifications with failure escalation
+- **Historical Analytics** - Response time trends and uptime statistics
+- **Beautiful Dashboard** - Modern, responsive web interface
+
+### **Enterprise Architecture**
+- **Asynchronous Processing** - Queue-based architecture with BullMQ
+- **Observability Stack** - Prometheus metrics + Grafana dashboards
+- **Redis Persistence** - Fast, reliable data storage
+- **Containerized** - Full Docker Compose setup
+- **CI/CD Ready** - GitLab pipeline with automated testing
+
+### **Intelligent Features**
+- **Progressive Alerting** - Reduces alert fatigue with smart escalation
+- **Recovery Notifications** - Get notified when services come back online
+- **Configurable Intervals** - Custom check frequencies (2-30 minutes)
+- **Expected Status Codes** - Define what "healthy" means for each URL
+- **URL Tagging** - Organize monitoring with custom tags
+
+---
+
+## Architecture
 
 ```mermaid
 graph TB
-    Users[👥 Users] --> LB[🔄 Load Balancer]
-    LB --> Frontend[🌐 Dashboard]
-    Frontend --> API[🚀 Express API]
+    Users[Users] --> LB[Load Balancer]
+    LB --> Frontend[Dashboard]
+    Frontend --> API[Express API]
     
-    API --> Queue[📬 BullMQ Queue]
-    API --> Redis[(🗄️ Redis)]
+    API --> Queue[BullMQ Queue]
+    API --> Redis[(Redis)]
     
-    Queue --> Worker[⚙️ Background Worker]
-    Redis --> Cron[⏰ Cron Scheduler]
+    Queue --> Worker[Background Worker]
+    Redis --> Cron[Cron Scheduler]
     Cron --> Queue
     
-    Worker --> Metrics[📊 Prometheus]
-    Worker --> Alerts[📧 Email Alerts]
+    Worker --> Metrics[Prometheus]
+    Worker --> Alerts[Email Alerts]
     
-    Metrics --> Grafana[📈 Grafana]
-    Queue --> BullBoard[📋 Bull Board]
+    Metrics --> Grafana[Grafana]
+    Queue --> BullBoard[Bull Board]
 ```
 
-### 🔥 **Technology Stack**
+### **Technology Stack**
 
 | Component | Technology | Purpose |
 |-----------|------------|---------|
@@ -95,19 +95,19 @@ graph TB
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
-- 🐳 **Docker** & **Docker Compose**
-- 📧 **Gmail Account** (for email alerts)
+- **Docker** & **Docker Compose**
+- **Gmail Account** (for email alerts)
 
-### 1️⃣ Clone & Setup
+### Clone & Setup
 ```bash
 git clone <your-repo-url>
 cd url-health-checker
 ```
 
-### 2️⃣ Configure Environment
+### Configure Environment
 ```bash
 cp .env.example .env
 ```
@@ -119,22 +119,22 @@ EMAIL_APP_PASSWORD=your-app-password
 ALERT_EMAIL=alerts@yourcompany.com
 ```
 
-### 3️⃣ Launch the Stack
+### Launch the Stack
 ```bash
 docker-compose up -d
 ```
 
-### 4️⃣ Access Your Services
-- 🌐 **Main Dashboard**: http://localhost:3000
-- 📊 **Grafana**: http://localhost:3001 (admin/admin)
-- 🔍 **Prometheus**: http://localhost:9090
-- 📋 **Queue Dashboard**: http://localhost:3000/admin/queues (admin/admin123)
+### Access Your Services
+- **Main Dashboard**: http://localhost:3000
+-  **Grafana**: http://localhost:3001 (admin/admin)
+-  **Prometheus**: http://localhost:9090
+-  **Queue Dashboard**: http://localhost:3000/admin/queues (admin/admin123)
 
 ---
 
-## 🔧 Configuration
+## Configuration
 
-### 🌍 Environment Variables
+### Environment Variables
 
 | Variable | Description | Default | Required |
 |----------|-------------|---------|----------|
@@ -155,22 +155,22 @@ docker-compose up -d
 
 ---
 
-## 📊 Monitoring & Observability
+## Monitoring & Observability
 
-### 🎯 **Key Metrics**
+###  **Key Metrics**
 - **Response Times**: Historical performance tracking
 - **Success Rates**: Uptime percentage calculations
 - **Failure Patterns**: Consecutive failure detection
 - **Queue Health**: Job processing statistics
 
-### 📈 **Grafana Dashboards**
+###  **Grafana Dashboards**
 Access pre-configured dashboards at `http://localhost:3001`:
 - **System Overview**: High-level health metrics
 - **URL Performance**: Individual URL response times
 - **Queue Statistics**: Job processing insights
 - **Alert History**: Notification timeline
 
-### 🔍 **Prometheus Metrics**
+###  **Prometheus Metrics**
 Custom metrics available at `/metrics`:
 ```
 url_check_duration_seconds - Response time histogram
@@ -181,17 +181,17 @@ nodejs_* - Standard Node.js metrics
 
 ---
 
-## 📧 Email Alerts
+## Email Alerts
 
-### 🚨 **Smart Alert Logic**
+### **Smart Alert Logic**
 Our intelligent alerting system prevents spam while keeping you informed:
 
-- **🔴 1st Failure**: Immediate notification
-- **🟡 3rd Failure**: Escalation alert
-- **🟠 Every 10th**: Periodic reminders
-- **🟢 Recovery**: Service restored notification
+- **1st Failure**: Immediate notification
+- ** 3rd Failure**: Escalation alert
+- **Every 10th**: Periodic reminders
+- **Recovery**: Service restored notification
 
-### 📬 **Alert Content**
+### **Alert Content**
 Rich HTML emails include:
 - URL status and error details
 - Response times and HTTP codes
@@ -200,9 +200,9 @@ Rich HTML emails include:
 
 ---
 
-## 🔌 API Reference
+## API Reference
 
-### 🎯 **URL Health Endpoints**
+### **URL Health Endpoints**
 
 #### Quick Check
 ```http
@@ -224,7 +224,7 @@ GET /url/status?url=https://example.com
 GET /url/history?url=https://example.com
 ```
 
-### 📊 **Monitoring Management**
+### **Monitoring Management**
 
 #### Add to Monitoring
 ```http
@@ -264,9 +264,9 @@ DELETE /monitoring/{id}
 
 ---
 
-## 🐳 Docker Deployment
+## Docker Deployment
 
-### 🚀 **Production Deployment**
+### **Production Deployment**
 ```bash
 # Build and start all services
 docker-compose up -d --build
@@ -281,7 +281,7 @@ docker-compose up -d --scale backend=3
 docker-compose down
 ```
 
-### 📦 **Individual Services**
+### **Individual Services**
 ```bash
 # Start only Redis
 docker-compose up redis -d
@@ -295,9 +295,9 @@ docker-compose restart backend
 
 ---
 
-## 🧪 Testing
+## Testing
 
-### 🔬 **Run Test Suite**
+### **Run Test Suite**
 ```bash
 # Run all tests
 npm test
@@ -312,18 +312,18 @@ npm test -- urlCheck.test.js
 npm test -- --watch
 ```
 
-### ✅ **CI/CD Pipeline**
+### **CI/CD Pipeline**
 The GitLab CI pipeline automatically:
-- 🧹 Runs ESLint for code quality
-- 🧪 Executes Jest test suite
-- 📊 Generates coverage reports
-- 🚀 Deploys on successful builds
+-  Runs ESLint for code quality
+-  Executes Jest test suite
+-  Generates coverage reports
+-  Deploys on successful builds
 
 ---
 
-## 🛠️ Development
+## Development
 
-### 🔧 **Local Development Setup**
+### **Local Development Setup**
 ```bash
 # Install dependencies
 npm install
@@ -338,24 +338,24 @@ npm run dev
 npm run lint
 ```
 
-### 📁 **Project Structure**
+###  **Project Structure**
 ```
 url-health-checker/
-├── 📁 src/
-│   ├── 📁 api/           # Express routes & controllers
-│   ├── 📁 config/        # Redis, email configuration
-│   ├── 📁 metrics/       # Prometheus metrics
-│   ├── 📁 models/        # Data models
-│   ├── 📁 queue/         # BullMQ setup & workers
-│   ├── 📁 scheduler/     # Cron job management
-│   └── 📁 utils/         # HTTP client, logger
-├── 📁 public/            # Frontend dashboard
-├── 📁 tests/             # Jest test files
-├── 📁 prometheus/        # Prometheus config
-└── 🐳 docker-compose.yml
+├──  src/
+│   ├──  api/           # Express routes & controllers
+│   ├──  config/        # Redis, email configuration
+│   ├──  metrics/       # Prometheus metrics
+│   ├──  models/        # Data models
+│   ├──  queue/         # BullMQ setup & workers
+│   ├──  scheduler/     # Cron job management
+│   └──  utils/         # HTTP client, logger
+├──  public/            # Frontend dashboard
+├──  tests/             # Jest test files
+├──  prometheus/        # Prometheus config
+└──  docker-compose.yml
 ```
 
-### 🎨 **Code Style**
+###  **Code Style**
 - **ESLint**: Enforced code standards
 - **Prettier**: Consistent formatting
 - **JSDoc**: Comprehensive documentation
@@ -363,15 +363,15 @@ url-health-checker/
 
 ---
 
-## 📈 Performance
+##  Performance
 
-### ⚡ **Optimizations**
+###  **Optimizations**
 - **Concurrent Processing**: 5 simultaneous URL checks
 - **Redis Caching**: Fast data retrieval
 - **Connection Pooling**: Efficient HTTP requests
 - **Queue Management**: Prevent memory leaks
 
-### 📊 **Benchmarks**
+###  **Benchmarks**
 - **Response Time**: < 100ms API responses
 - **Throughput**: 300+ URLs/minute processing
 - **Memory**: < 50MB baseline usage
@@ -379,9 +379,9 @@ url-health-checker/
 
 ---
 
-## 🔒 Security Features
+##  Security Features
 
-### 🛡️ **Built-in Security**
+###  **Built-in Security**
 - **Basic Authentication** for admin panels
 - **Input Validation** for all API endpoints  
 - **Rate Limiting** protection
@@ -390,9 +390,9 @@ url-health-checker/
 
 ---
 
-## 🚀 Advanced Features
+## Advanced Features
 
-### 🎯 **Custom Monitoring**
+###  **Custom Monitoring**
 ```javascript
 // Add URL with custom configuration
 {
@@ -406,7 +406,7 @@ url-health-checker/
 }
 ```
 
-### 📊 **Webhook Integration** (Coming Soon)
+###  **Webhook Integration** (Coming Soon)
 - Slack notifications
 - Discord alerts  
 - Custom webhook endpoints
@@ -414,11 +414,11 @@ url-health-checker/
 
 ---
 
-## 🤝 Contributing
+##  Contributing
 
 We welcome contributions! Here's how to get started:
 
-### 🛠️ **Development Workflow**
+###  **Development Workflow**
 ```bash
 # 1. Fork the repository
 # 2. Create feature branch
@@ -435,7 +435,7 @@ git commit -m "feat: add webhook notifications"
 git push origin feature/awesome-feature
 ```
 
-### 📝 **Contribution Guidelines**
+###  **Contribution Guidelines**
 - Follow existing code style
 - Add tests for new features
 - Update documentation
@@ -443,13 +443,13 @@ git push origin feature/awesome-feature
 
 ---
 
-## 📄 License
+##  License
 
 This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
 
 ---
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - **BullMQ** - Reliable job queue system
 - **Prometheus** - Powerful metrics collection
@@ -459,16 +459,16 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 
 ---
 
-## 📞 Support & Contact
+##  Support & Contact
 
-- 🐛 **Issues**: [GitHub Issues](https://github.com/bitgladiator/url-health-checker/issues)
-- 💬 **Discussions**: [GitHub Discussions](https://github.com/bitgladiator/url-health-checker/discussions)
-- 📧 **Email**: [karansh1232@gmail.com](mailto:karansh1232@gmail.com)
+-  **Issues**: [GitHub Issues](https://github.com/bitgladiator/url-health-checker/issues)
+-  **Discussions**: [GitHub Discussions](https://github.com/bitgladiator/url-health-checker/discussions)
+-  **Email**: [karansh1232@gmail.com](mailto:karansh1232@gmail.com)
 
 
 ---
 
 <div align="center">
-  <h3>⭐ If this project helped you, please consider giving it a star! ⭐</h3>
+  <h3> If this project helped you, please consider giving it a star! ⭐</h3>
   <p>Built with ❤️ by <a href="https://github.com/bitgladiator">Karan Sharma</a></p>
 </div>
