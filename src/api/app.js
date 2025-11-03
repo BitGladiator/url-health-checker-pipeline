@@ -5,6 +5,7 @@ const { createBullBoard } = require('@bull-board/api');
 const { BullMQAdapter } = require('@bull-board/api/bullMQAdapter');
 const basicAuth = require('express-basic-auth');
 const monitoringRoutes = require('./routes/monitoring.routes.js');
+const historyRoutes = require('./routes/history.routes.js'); 
 const { metricsRouter } = require('../metrics/prometheus');
 const { urlCheckQueue } = require('../queue/queue');
 const path = require('path');
@@ -18,6 +19,8 @@ app.use(metricsRouter);
 
 app.use('/url', urlRoutes);
 app.use('/monitoring', monitoringRoutes);
+app.use('/history', historyRoutes); 
+
 app.get('/', (req, res) => {
   res.send('URL Health Checker API is running');
 });

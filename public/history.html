@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Check History - URL Health Checker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-gray-100 text-gray-800">
+    <nav class="bg-white shadow mb-6">
+      <div
+        class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between"
+      >
+        <h1 class="text-lg font-semibold text-blue-600">URL Health Checker</h1>
+        <div class="flex items-center gap-4">
+          <a href="/" class="text-sm text-gray-600 hover:text-blue-600"
+            >Dashboard</a
+          >
+          <a href="/history.html" class="text-sm text-blue-600 font-medium"
+            >History</a
+          >
+        </div>
+      </div>
+    </nav>
+
+    <main class="max-w-6xl mx-auto px-4 pb-12">
+      <section class="bg-white rounded-lg shadow p-4 mb-6">
+        <div class="flex flex-col md:flex-row gap-3 md:items-end">
+          <div class="flex-1">
+            <label class="block text-sm text-gray-700 mb-1">URL</label>
+            <input
+              id="filterUrl"
+              type="text"
+              placeholder="Filter by URL..."
+              class="w-full border rounded px-3 py-2"
+            />
+          </div>
+          <div style="width: 160px">
+            <label class="block text-sm text-gray-700 mb-1">Status</label>
+            <select id="filterStatus" class="w-full border rounded px-3 py-2">
+              <option value="">All Statuses</option>
+              <option value="success">Success (2xx)</option>
+              <option value="error">Error/Failed</option>
+            </select>
+          </div>
+          <div style="width: 150px">
+            <label class="block text-sm text-gray-700 mb-1">From</label>
+            <input
+              id="filterDateFrom"
+              type="date"
+              class="w-full border rounded px-3 py-2"
+            />
+          </div>
+          <div style="width: 150px">
+            <label class="block text-sm text-gray-700 mb-1">To</label>
+            <input
+              id="filterDateTo"
+              type="date"
+              class="w-full border rounded px-3 py-2"
+            />
+          </div>
+          <div class="flex gap-2">
+            <button
+              onclick="applyFilters()"
+              class="bg-blue-600 text-white px-4 py-2 rounded text-sm"
+            >
+              Apply
+            </button>
+            <button
+              onclick="clearFilters()"
+              class="border px-4 py-2 rounded text-sm"
+            >
+              Clear
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Stats -->
+      <section class="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-6">
+        <div class="bg-white rounded-lg shadow p-4">
+          <div class="text-xs text-gray-500">Total Checks</div>
+          <div id="statTotal" class="text-2xl font-semibold text-blue-600">
+            0
+          </div>
+        </div>
+        <div class="bg-white rounded-lg shadow p-4">
+          <div class="text-xs text-gray-500">Successful</div>
+          <div id="statSuccess" class="text-2xl font-semibold text-green-600">
+            0
+          </div>
+        </div>
+        <div class="bg-white rounded-lg shadow p-4">
+          <div class="text-xs text-gray-500">Failed</div>
+          <div id="statFailed" class="text-2xl font-semibold text-red-600">
+            0
+          </div>
+        </div>
+        <div class="bg-white rounded-lg shadow p-4">
+          <div class="text-xs text-gray-500">Avg Response</div>
+          <div
+            id="statAvgResponse"
+            class="text-2xl font-semibold text-gray-800"
+          >
+            0ms
+          </div>
+        </div>
+      </section>
+      <section class="bg-white rounded-lg shadow p-4">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="text-sm font-medium">Check History</h2>
+          <div class="flex items-center gap-3">
+            <button
+              onclick="exportToCSV()"
+              title="Export CSV"
+              class="flex items-center gap-2 text-sm hover:text-gray-700"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden
+              >
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="7 10 12 15 17 10" />
+                <line x1="12" y1="15" x2="12" y2="3" />
+              </svg>
+              <span>Export</span>
+            </button>
+            <button
+              onclick="loadHistory()"
+              title="Refresh"
+              class="flex items-center gap-2 text-sm hover:text-gray-700"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden
+              >
+                <polyline points="23 4 23 10 17 10" />
+                <polyline points="1 20 1 14 7 14" />
+                <path d="M3.51 9a9 9 0 0 1 14.13-3.36L23 10" />
+                <path d="M20.49 15a9 9 0 0 1-14.13 3.36L1 14" />
+              </svg>
+              <span>Refresh</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full table-auto text-sm">
+            <thead class="text-left text-gray-600 border-b">
+              <tr>
+                <th class="px-3 py-2">URL</th>
+                <th class="px-3 py-2">Status</th>
+                <th class="px-3 py-2">Response Time</th>
+                <th class="px-3 py-2">Timestamp</th>
+                <th class="px-3 py-2">Error</th>
+              </tr>
+            </thead>
+            <tbody id="historyTableBody">
+              <tr>
+                <td colspan="5" class="text-center py-8 text-gray-500">
+                  Loading history...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="flex items-center justify-between mt-4">
+          <div class="text-xs text-gray-600">
+            Showing <span id="showingCount">0</span> records
+          </div>
+          <div class="flex gap-2">
+            <button
+              id="prevBtn"
+              onclick="previousPage()"
+              class="px-3 py-1 border rounded text-xs disabled:opacity-50"
+              disabled
+            >
+              Previous
+            </button>
+            <button
+              id="nextBtn"
+              onclick="nextPage()"
+              class="px-3 py-1 border rounded text-xs disabled:opacity-50"
+              disabled
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      let allHistory = [];
+      let filteredHistory = [];
+      let currentPage = 1;
+      const itemsPerPage = 50;
+
+      async function loadHistory() {
+        try {
+          const res = await fetch("/history/all");
+          const data = await res.json();
+          allHistory = data.history || [];
+          filteredHistory = allHistory;
+          currentPage = 1;
+          updateStatistics();
+          renderTable();
+        } catch (err) {
+          console.error(err);
+          document.getElementById(
+            "historyTableBody"
+          ).innerHTML = `\n          <tr>\n            <td colspan="5" class="text-center py-8 text-red-500">Failed to load history</td>\n          </tr>`;
+        }
+      }
+
+      function applyFilters() {
+        const urlFilter = document
+          .getElementById("filterUrl")
+          .value.toLowerCase();
+        const statusFilter = document.getElementById("filterStatus").value;
+        const dateFrom = document.getElementById("filterDateFrom").value;
+        const dateTo = document.getElementById("filterDateTo").value;
+
+        filteredHistory = allHistory.filter((item) => {
+          if (urlFilter && !item.url.toLowerCase().includes(urlFilter))
+            return false;
+          if (
+            statusFilter === "success" &&
+            (item.status < 200 || item.status >= 400)
+          )
+            return false;
+          if (
+            statusFilter === "error" &&
+            item.status >= 200 &&
+            item.status < 400
+          )
+            return false;
+          const itemDate = new Date(item.timestamp).toISOString().split("T")[0];
+          if (dateFrom && itemDate < dateFrom) return false;
+          if (dateTo && itemDate > dateTo) return false;
+          return true;
+        });
+
+        currentPage = 1;
+        updateStatistics();
+        renderTable();
+      }
+
+      function clearFilters() {
+        document.getElementById("filterUrl").value = "";
+        document.getElementById("filterStatus").value = "";
+        document.getElementById("filterDateFrom").value = "";
+        document.getElementById("filterDateTo").value = "";
+        filteredHistory = allHistory;
+        currentPage = 1;
+        updateStatistics();
+        renderTable();
+      }
+
+      function updateStatistics() {
+        const total = filteredHistory.length;
+        const successful = filteredHistory.filter(
+          (h) => h.status >= 200 && h.status < 400
+        ).length;
+        const failed = total - successful;
+        const durations = filteredHistory
+          .filter((h) => h.duration)
+          .map((h) => h.duration || 0);
+        const avgResponse = durations.length
+          ? Math.round(durations.reduce((a, b) => a + b, 0) / durations.length)
+          : 0;
+
+        document.getElementById("statTotal").textContent = total;
+        document.getElementById("statSuccess").textContent = successful;
+        document.getElementById("statFailed").textContent = failed;
+        document.getElementById("statAvgResponse").textContent =
+          avgResponse + "ms";
+      }
+
+      function badgeHtmlFor(item) {
+        const ok = item.status >= 200 && item.status < 400;
+        const label = item.status || "Failed";
+        const color = ok ? "green" : "red";
+        return `<span class="inline-flex items-center px-2 py-0.5 text-xs font-medium rounded bg-${color}-100 text-${color}-800">${label}</span>`;
+      }
+
+      function renderTable() {
+        const start = (currentPage - 1) * itemsPerPage;
+        const end = start + itemsPerPage;
+        const pageData = filteredHistory.slice(start, end);
+
+        if (!pageData.length) {
+          document.getElementById(
+            "historyTableBody"
+          ).innerHTML = `\n          <tr>\n            <td colspan="5" class="text-center py-8 text-gray-500">No records found</td>\n          </tr>`;
+          document.getElementById("showingCount").textContent = "0";
+          document.getElementById("prevBtn").disabled = true;
+          document.getElementById("nextBtn").disabled = true;
+          return;
+        }
+
+        let html = "";
+        for (const item of pageData) {
+          html += `\n          <tr class="border-t">\n            <td class="px-3 py-2 text-sm max-w-xs truncate" title="${
+            item.url
+          }">${item.url}</td>\n            <td class="px-3 py-2">${badgeHtmlFor(
+            item
+          )}</td>\n            <td class="px-3 py-2 text-sm">${
+            item.duration ? item.duration + "ms" : "-"
+          }</td>\n            <td class="px-3 py-2 text-sm text-gray-600">${new Date(
+            item.timestamp
+          ).toLocaleString()}</td>\n            <td class="px-3 py-2 text-sm text-red-600">${
+            item.error ? escapeHtml(item.error).slice(0, 80) : "-"
+          }</td>\n          </tr>`;
+        }
+
+        document.getElementById("historyTableBody").innerHTML = html;
+        document.getElementById("showingCount").textContent = `${
+          start + 1
+        }-${Math.min(end, filteredHistory.length)} of ${
+          filteredHistory.length
+        }`;
+
+        document.getElementById("prevBtn").disabled = currentPage === 1;
+        document.getElementById("nextBtn").disabled =
+          end >= filteredHistory.length;
+      }
+
+      function previousPage() {
+        if (currentPage > 1) {
+          currentPage--;
+          renderTable();
+        }
+      }
+      function nextPage() {
+        if (currentPage * itemsPerPage < filteredHistory.length) {
+          currentPage++;
+          renderTable();
+        }
+      }
+
+      function exportToCSV() {
+        const csv = ["URL,Status,Response Time,Timestamp,Error"];
+        for (const item of filteredHistory) {
+          const row = [
+            item.url,
+            item.status || "Failed",
+            item.duration || "",
+            new Date(item.timestamp).toISOString(),
+            item.error || "",
+          ]
+            .map((f) => `"${String(f).replace(/"/g, '""')}"`)
+            .join(",");
+          csv.push(row);
+        }
+        const blob = new Blob([csv.join("\n")], { type: "text/csv" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `url-health-history-${new Date().toISOString()}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+
+      function escapeHtml(unsafe) {
+        return String(unsafe)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      }
+      window.addEventListener("load", loadHistory);
+    </script>
+  </body>
+</html>

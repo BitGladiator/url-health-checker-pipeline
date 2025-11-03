@@ -6,11 +6,20 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   </head>
-  <body class="bg-gray-100 text-gray-800 p-6">
+  <body class="bg-gray-100 text-gray-800">
+    <nav class="bg-white shadow-md mb-6">
+      <div class="max-w-xl mx-auto px-4 py-4">
+        <div class="flex justify-between items-center">
+          <h1 class="text-xl font-bold text-blue-600">URL Health Checker</h1>
+          <div class="space-x-4">
+            <a href="/" class="text-blue-600 font-semibold">Dashboard</a>
+            <a href="/history.html" class="text-gray-600 hover:text-blue-600">History</a>
+          </div>
+        </div>
+      </div>
+    </nav>
     <div class="max-w-xl mx-auto bg-white rounded-xl shadow-lg p-8">
       <h1 class="text-2xl font-bold mb-6 text-center">URL Health Checker</h1>
-
-      <!-- Quick Check Section -->
       <div class="mb-8">
         <h2 class="text-lg font-semibold mb-3">Quick Check</h2>
         <div class="flex items-center space-x-2 mb-4">
@@ -36,8 +45,6 @@
           <canvas id="historyChart" class="w-full h-64"></canvas>
         </div>
       </div>
-
-      <!-- Add to Monitoring Section -->
       <div class="border-t pt-6">
         <h2 class="text-lg font-semibold mb-3">Add to Monitoring</h2>
         
@@ -82,8 +89,6 @@
         
         <div id="monitoringResult"></div>
       </div>
-
-      <!-- Monitored URLs List -->
       <div class="border-t pt-6 mt-6">
         <div class="flex justify-between items-center mb-3">
           <h2 class="text-lg font-semibold">Monitored URLs</h2>
@@ -101,7 +106,6 @@
     </div>
 
     <script>
-      // Quick URL check (existing functionality)
       async function checkUrl() {
         const url = document.getElementById("urlInput").value;
         if (!url) return alert("Please enter a URL");
@@ -154,8 +158,6 @@
 
           document.getElementById("historyResult").innerHTML = html;
           document.getElementById("chartContainer").classList.remove("hidden");
-
-          // Draw chart
           const labels = (historyData.history || []).map((entry) =>
             new Date(entry.timestamp).toLocaleTimeString()
           );
@@ -212,8 +214,6 @@
           `;
         }
       }
-
-      // Add URL to monitoring
       async function addToMonitoring() {
         const url = document.getElementById('monitorUrl').value;
         const checkInterval = parseInt(document.getElementById('checkInterval').value);
@@ -225,7 +225,7 @@
 
         const payload = {
           url,
-          name: url, // Use URL as name for simplicity
+          name: url,
           checkInterval
         };
 
@@ -258,12 +258,8 @@
                 <p class="text-sm">You'll get email alerts if it goes down.</p>
               </div>
             `;
-            
-            // Clear form
             document.getElementById('monitorUrl').value = '';
             document.getElementById('alertEmail').value = '';
-            
-            // Refresh the monitored URLs list
             setTimeout(() => loadMonitoredUrls(), 1000);
             
           } else {
@@ -281,8 +277,6 @@
           `;
         }
       }
-
-      // Load monitored URLs
       async function loadMonitoredUrls() {
         document.getElementById('monitoredUrlsList').innerHTML = `
           <p class="text-gray-500 text-center py-4">Loading...</p>
@@ -336,8 +330,6 @@
           `;
         }
       }
-
-      // Remove URL from monitoring
       async function removeFromMonitoring(id) {
         if (!confirm('Stop monitoring this URL?')) return;
 
@@ -347,7 +339,7 @@
           });
 
           if (response.ok) {
-            loadMonitoredUrls(); // Refresh list
+            loadMonitoredUrls(); 
           } else {
             alert('Failed to remove URL from monitoring');
           }
@@ -355,8 +347,6 @@
           alert('Network error while removing URL');
         }
       }
-
-      // Load monitored URLs when page loads
       window.addEventListener('load', () => {
         loadMonitoredUrls();
       });
