@@ -1,26 +1,21 @@
 const nodemailer = require('nodemailer');
-
-// Check if email credentials are configured
 const isEmailConfigured = () => {
   return !!(process.env.EMAIL_USER && process.env.EMAIL_APP_PASSWORD);
 };
-
-// Email configuration - Fixed typo from createEmailTransporter to createTransporter
 const createEmailTransporter = () => {
   if (!isEmailConfigured()) {
-    console.warn('⚠️  Email credentials not configured. Email alerts will be disabled.');
+    console.warn('Email credentials not configured. Email alerts will be disabled.');
     return null;
   }
 
   try {
     return nodemailer.createTransport({
-      service: 'gmail', // You can use other services like 'outlook', 'yahoo', etc.
+      service: 'gmail', 
       auth: {
-        user: process.env.EMAIL_USER, // Your email address
-        pass: process.env.EMAIL_APP_PASSWORD // App password (not regular password)
+        user: process.env.EMAIL_USER, 
+        pass: process.env.EMAIL_APP_PASSWORD 
       },
-      // Add some additional options for better reliability
-      secure: true, // Use SSL
+      secure: true, 
       tls: {
         rejectUnauthorized: false
       }
@@ -30,24 +25,21 @@ const createEmailTransporter = () => {
     return null;
   }
 };
-
-// Send email alert function
 const sendEmailAlert = async (url, status, details = {}) => {
   try {
-    // Check if email is configured
     if (!isEmailConfigured()) {
-      console.log(`📧 Email not configured - would send alert: ${url} is ${status}`);
+      console.log(`Email not configured - would send alert: ${url} is ${status}`);
       return false;
     }
 
     const transporter = createEmailTransporter();
     if (!transporter) {
-      console.error('📧 Email transporter not available');
+      console.error('Email transporter not available');
       return false;
     }
     
     const isDown = status === 'DOWN';
-    const subject = `🚨 Alert: ${url} is ${status}`;
+    const subject = `Alert: ${url} is ${status}`;
     
     const htmlContent = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -88,16 +80,14 @@ const sendEmailAlert = async (url, status, details = {}) => {
     };
 
     await transporter.sendMail(mailOptions);
-    console.log(`📧 Alert email sent for ${url} - Status: ${status} to ${recipient}`);
+    console.log(`Alert email sent for ${url} - Status: ${status} to ${recipient}`);
     return true;
     
   } catch (error) {
-    console.error('📧 Failed to send email alert:', error.message);
+    console.error('Failed to send email alert:', error.message);
     return false;
   }
 };
-
-// Test email configuration
 const testEmailConfig = async () => {
   if (!isEmailConfigured()) {
     return { success: false, message: 'Email credentials not configured' };

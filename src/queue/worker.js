@@ -10,8 +10,6 @@ const createWorker = () => {
   const worker = new Worker('url-check-queue', async job => {
     const { url, monitoredUrlId } = job.data;
     const key = `url-check:history:${url}`;
-
-    // Get monitored URL config if available
     let monitoredUrl = null;
     if (monitoredUrlId) {
       monitoredUrl = await MonitoredUrl.getById(monitoredUrlId);
@@ -28,16 +26,10 @@ const createWorker = () => {
         duration,
         timestamp: new Date().toISOString(),
       };
-
-      // Save to Redis history
       await redisConnection.lpush(key, JSON.stringify(result));
       await redisConnection.ltrim(key, 0, 9);
-
-      // Update monitored URL status
       if (monitoredUrl) {
         await monitoredUrl.updateFailureCount(false);
-        
-        // Send recovery email if this was previously down
         if (monitoredUrl.consecutiveFailures > 0) {
           await sendEmailAlert(url, 'RECOVERED', {
             httpStatus: response.status,
@@ -59,20 +51,14 @@ const createWorker = () => {
         error: error.message,
         timestamp: new Date().toISOString(),
       };
-
-      // Save error to Redis
       await redisConnection.lpush(key, JSON.stringify(result));
       await redisConnection.ltrim(key, 0, 9);
-
-      // Handle monitored URL failure
       if (monitoredUrl) {
         await monitoredUrl.updateFailureCount(true);
-        
-        // Send alert email for failures (avoid spam by limiting frequency)
         const shouldAlert = (
-          monitoredUrl.consecutiveFailures === 1 || // First failure
-          monitoredUrl.consecutiveFailures === 3 || // After 3 consecutive
-          monitoredUrl.consecutiveFailures % 10 === 0 // Every 10 failures
+          monitoredUrl.consecutiveFailures === 1 ||
+          monitoredUrl.consecutiveFailures === 3 || 
+          monitoredUrl.consecutiveFailures % 10 === 0 
         );
 
         if (shouldAlert) {
@@ -89,7 +75,7 @@ const createWorker = () => {
     }
   }, {
     connection: redisConnection,
-    concurrency: 5 // Process up to 5 jobs simultaneously
+    concurrency: 5
   });
 
   worker.on('completed', job => {

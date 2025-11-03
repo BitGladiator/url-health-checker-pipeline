@@ -1,3 +1,5 @@
+version: "3.9"
+
 services:
   redis:
     image: redis:6
@@ -31,9 +33,11 @@ services:
       - "3000:3000"
     volumes:
       - .:/app
+      - /app/node_modules
     depends_on:
       - redis
     environment:
+      - NODE_ENV=development
       - REDIS_URL=redis://redis:6379
       - EMAIL_USER=${EMAIL_USER}
       - EMAIL_APP_PASSWORD=${EMAIL_APP_PASSWORD}

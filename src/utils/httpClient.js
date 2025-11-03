@@ -2,7 +2,7 @@ const axios = require('axios');
 const logger = require('./logger');
 
 const httpClient = axios.create({
-  timeout: 5000, // 5 seconds timeout for all requests
+  timeout: 5000, 
 });
 
 httpClient.interceptors.response.use(

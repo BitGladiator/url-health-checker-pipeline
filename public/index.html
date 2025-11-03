@@ -12,7 +12,7 @@
 
       <!-- Quick Check Section -->
       <div class="mb-8">
-        <h2 class="text-lg font-semibold mb-3">🔍 Quick Check</h2>
+        <h2 class="text-lg font-semibold mb-3">Quick Check</h2>
         <div class="flex items-center space-x-2 mb-4">
           <input
             id="urlInput"
@@ -39,7 +39,7 @@
 
       <!-- Add to Monitoring Section -->
       <div class="border-t pt-6">
-        <h2 class="text-lg font-semibold mb-3">🎯 Add to Monitoring</h2>
+        <h2 class="text-lg font-semibold mb-3">Add to Monitoring</h2>
         
         <div class="bg-gray-50 p-4 rounded-lg mb-4">
           <div class="space-y-3">
@@ -86,7 +86,7 @@
       <!-- Monitored URLs List -->
       <div class="border-t pt-6 mt-6">
         <div class="flex justify-between items-center mb-3">
-          <h2 class="text-lg font-semibold">📊 Monitored URLs</h2>
+          <h2 class="text-lg font-semibold">Monitored URLs</h2>
           <button
             onclick="loadMonitoredUrls()"
             class="text-blue-600 hover:text-blue-800 text-sm"
@@ -253,7 +253,7 @@
           if (response.ok) {
             document.getElementById('monitoringResult').innerHTML = `
               <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
-                <p><strong>✅ Success!</strong></p>
+                <p><strong>Success!</strong></p>
                 <p>Monitoring ${result.url} every ${result.checkInterval} minutes</p>
                 <p class="text-sm">You'll get email alerts if it goes down.</p>
               </div>
@@ -269,14 +269,14 @@
           } else {
             document.getElementById('monitoringResult').innerHTML = `
               <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-                <p><strong>❌ Error:</strong> ${result.error || 'Failed to add URL'}</p>
+                <p><strong>Error:</strong> ${result.error || 'Failed to add URL'}</p>
               </div>
             `;
           }
         } catch (error) {
           document.getElementById('monitoringResult').innerHTML = `
             <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-              <p><strong>❌ Network Error:</strong> Could not connect to server</p>
+              <p><strong>Network Error:</strong> Could not connect to server</p>
             </div>
           `;
         }
