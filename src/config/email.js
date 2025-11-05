@@ -1,64 +1,101 @@
-const nodemailer = require('nodemailer');
+const nodemailer = require("nodemailer");
 const isEmailConfigured = () => {
   return !!(process.env.EMAIL_USER && process.env.EMAIL_APP_PASSWORD);
 };
 const createEmailTransporter = () => {
   if (!isEmailConfigured()) {
-    console.warn('Email credentials not configured. Email alerts will be disabled.');
+    console.warn(
+      "Email credentials not configured. Email alerts will be disabled."
+    );
     return null;
   }
 
   try {
     return nodemailer.createTransport({
-      service: 'gmail', 
+      service: "gmail",
       auth: {
-        user: process.env.EMAIL_USER, 
-        pass: process.env.EMAIL_APP_PASSWORD 
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_APP_PASSWORD,
       },
-      secure: true, 
+      secure: true,
       tls: {
-        rejectUnauthorized: false
-      }
+        rejectUnauthorized: false,
+      },
     });
   } catch (error) {
-    console.error('Failed to create email transporter:', error);
+    console.error("Failed to create email transporter:", error);
     return null;
   }
 };
 const sendEmailAlert = async (url, status, details = {}) => {
   try {
     if (!isEmailConfigured()) {
-      console.log(`Email not configured - would send alert: ${url} is ${status}`);
+      console.log(
+        `Email not configured - would send alert: ${url} is ${status}`
+      );
       return false;
     }
 
     const transporter = createEmailTransporter();
     if (!transporter) {
-      console.error('Email transporter not available');
+      console.error("Email transporter not available");
       return false;
     }
-    
-    const isDown = status === 'DOWN';
+
+    const isDown = status === "DOWN";
+    const isSlow = status === "SLOW_RESPONSE";
     const subject = `Alert: ${url} is ${status}`;
-    
+
     const htmlContent = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <div style="background: ${isDown ? '#fee2e2' : '#d1fae5'}; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-          <h2 style="color: ${isDown ? '#dc2626' : '#059669'}; margin: 0;">
-            ${isDown ? '🚨' : '✅'} URL Health Alert
+        <div style="background: ${
+          isDown ? "#fee2e2" : isSlow ? "#fef3c7" : "#d1fae5"
+        }; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+          <h2 style="color: ${
+            isDown ? "#dc2626" : isSlow ? "#d97706" : "#059669"
+          }; margin: 0;">
+            ${isDown ? "🚨" : isSlow ? "⚠️" : "✅"} URL Health Alert
           </h2>
         </div>
         
         <div style="background: #f9fafb; padding: 20px; border-radius: 8px;">
           <h3>URL Status Report</h3>
           <p><strong>URL:</strong> ${url}</p>
-          <p><strong>Status:</strong> <span style="color: ${isDown ? '#dc2626' : '#059669'};">${status}</span></p>
+          <p><strong>Status:</strong> <span style="color: ${
+            isDown ? "#dc2626" : "#059669"
+          };">${status}</span></p>
           <p><strong>Time:</strong> ${new Date().toLocaleString()}</p>
           
-          ${details.error ? `<p><strong>Error:</strong> ${details.error}</p>` : ''}
-          ${details.responseTime ? `<p><strong>Response Time:</strong> ${details.responseTime}ms</p>` : ''}
-          ${details.httpStatus ? `<p><strong>HTTP Status:</strong> ${details.httpStatus}</p>` : ''}
-          ${details.consecutiveFailures ? `<p><strong>Consecutive Failures:</strong> ${details.consecutiveFailures}</p>` : ''}
+          ${
+            details.error
+              ? `<p><strong>Error:</strong> ${details.error}</p>`
+              : ""
+          }
+          ${
+            details.responseTime
+              ? `<p><strong>Response Time:</strong> ${details.responseTime}ms</p>`
+              : ""
+          }
+          ${
+            details.threshold
+              ? `<p><strong>Threshold:</strong> ${details.threshold}ms</p>`
+              : ""
+          }
+          ${
+            details.httpStatus
+              ? `<p><strong>HTTP Status:</strong> ${details.httpStatus}</p>`
+              : ""
+          }
+          ${
+            details.consecutiveFailures
+              ? `<p><strong>Consecutive Failures:</strong> ${details.consecutiveFailures}</p>`
+              : ""
+          }
+          ${
+            isSlow
+              ? `<p style="color: #d97706;"><strong>Warning:</strong> Response time exceeded the configured threshold!</p>`
+              : ""
+          }
         </div>
         
         <div style="margin-top: 20px; padding: 15px; background: #f3f4f6; border-radius: 8px;">
@@ -70,44 +107,46 @@ const sendEmailAlert = async (url, status, details = {}) => {
       </div>
     `;
 
-    const recipient = details.alertEmail || process.env.ALERT_EMAIL || process.env.EMAIL_USER;
+    const recipient =
+      details.alertEmail || process.env.ALERT_EMAIL || process.env.EMAIL_USER;
 
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to: recipient,
       subject: subject,
-      html: htmlContent
+      html: htmlContent,
     };
 
     await transporter.sendMail(mailOptions);
-    console.log(`Alert email sent for ${url} - Status: ${status} to ${recipient}`);
+    console.log(
+      `Alert email sent for ${url} - Status: ${status} to ${recipient}`
+    );
     return true;
-    
   } catch (error) {
-    console.error('Failed to send email alert:', error.message);
+    console.error("Failed to send email alert:", error.message);
     return false;
   }
 };
 const testEmailConfig = async () => {
   if (!isEmailConfigured()) {
-    return { success: false, message: 'Email credentials not configured' };
+    return { success: false, message: "Email credentials not configured" };
   }
 
   try {
     const transporter = createEmailTransporter();
     if (!transporter) {
-      return { success: false, message: 'Failed to create email transporter' };
+      return { success: false, message: "Failed to create email transporter" };
     }
-    
+
     await transporter.verify();
-    return { success: true, message: 'Email configuration is valid' };
+    return { success: true, message: "Email configuration is valid" };
   } catch (error) {
     return { success: false, message: `Email config error: ${error.message}` };
   }
 };
 
-module.exports = { 
-  sendEmailAlert, 
-  isEmailConfigured, 
-  testEmailConfig 
+module.exports = {
+  sendEmailAlert,
+  isEmailConfigured,
+  testEmailConfig,
 };

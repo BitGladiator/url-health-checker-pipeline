@@ -9,7 +9,8 @@ const addMonitoredUrl = async (req, res) => {
       checkInterval = 5,
       alertEmail,
       expectedStatus = [200, 201, 202, 204],
-      tags = []
+      tags = [],
+      responseTimeThreshold 
     } = req.body;
 
     if (!url) {
@@ -22,19 +23,20 @@ const addMonitoredUrl = async (req, res) => {
       checkInterval,
       alertEmail,
       expectedStatus,
-      tags
+      tags,
+      responseTimeThreshold 
     });
 
     await monitoredUrl.save();
     
-    // Schedule the monitoring job
     cronScheduler.scheduleUrlCheck(monitoredUrl);
 
     res.status(201).json({
       message: 'URL added to monitoring',
       id: monitoredUrl.id,
       url: monitoredUrl.url,
-      checkInterval: monitoredUrl.checkInterval
+      checkInterval: monitoredUrl.checkInterval,
+      responseTimeThreshold: monitoredUrl.responseTimeThreshold 
     });
 
   } catch (error) {

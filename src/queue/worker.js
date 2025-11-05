@@ -19,30 +19,56 @@ const createWorker = () => {
       const start = Date.now();
       const response = await httpClient.get(url);
       const duration = Date.now() - start;
-
+      const thresholdExceeded = monitoredUrl?.responseTimeThreshold && 
+                                duration > monitoredUrl.responseTimeThreshold;
+    
       const result = {
         url,
         status: response.status,
         duration,
         timestamp: new Date().toISOString(),
+        thresholdExceeded 
       };
+      
       await redisConnection.lpush(key, JSON.stringify(result));
       await redisConnection.ltrim(key, 0, 9);
-      if (monitoredUrl) {
-        await monitoredUrl.updateFailureCount(false);
-        if (monitoredUrl.consecutiveFailures > 0) {
-          await sendEmailAlert(url, 'RECOVERED', {
-            httpStatus: response.status,
-            responseTime: duration,
-            wasDownFor: `${monitoredUrl.consecutiveFailures} consecutive checks`
-          });
+      if (thresholdExceeded) {
+        if (monitoredUrl) {
+          await monitoredUrl.updateFailureCount(true);
+          
+          const shouldAlert = (
+            monitoredUrl.consecutiveFailures === 1 ||
+            monitoredUrl.consecutiveFailures === 3 || 
+            monitoredUrl.consecutiveFailures % 10 === 0 
+          );
+    
+          if (shouldAlert) {
+            await sendEmailAlert(url, 'SLOW_RESPONSE', {
+              httpStatus: response.status,
+              responseTime: duration,
+              threshold: monitoredUrl.responseTimeThreshold,
+              consecutiveFailures: monitoredUrl.consecutiveFailures
+            });
+          }
         }
+        logger.warn(`[${url}] Threshold exceeded: ${duration}ms > ${monitoredUrl.responseTimeThreshold}ms`);
+      } else {
+        if (monitoredUrl) {
+          await monitoredUrl.updateFailureCount(false);
+          if (monitoredUrl.consecutiveFailures > 0) {
+            await sendEmailAlert(url, 'RECOVERED', {
+              httpStatus: response.status,
+              responseTime: duration,
+              wasDownFor: `${monitoredUrl.consecutiveFailures} consecutive checks`
+            });
+          }
+        }
+        logger.info(`[${url}] Success: ${response.status} in ${duration}ms`);
       }
-
-      logger.info(`[${url}] Success: ${response.status} in ${duration}ms`);
+    
       httpDuration.labels(url, response.status).observe(duration / 1000);
-
-    } catch (error) {
+    }
+    catch (error) {
       const status = error.response?.status || 'NO_RESPONSE';
       
       const result = {

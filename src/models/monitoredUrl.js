@@ -15,6 +15,7 @@ class MonitoredUrl {
     this.lastCheck = data.lastCheck;
     this.lastStatus = data.lastStatus;
     this.createdAt = data.createdAt || new Date().toISOString();
+    this.responseTimeThreshold = data.responseTimeThreshold || null;
   }
   async save() {
     const key = `monitored:${this.id}`;
@@ -37,6 +38,7 @@ class MonitoredUrl {
     if (data.tags) data.tags = JSON.parse(data.tags);
     if (data.expectedStatus) data.expectedStatus = JSON.parse(data.expectedStatus);
     if (data.consecutiveFailures) data.consecutiveFailures = parseInt(data.consecutiveFailures);
+    if (data.responseTimeThreshold) data.responseTimeThreshold = parseInt(data.responseTimeThreshold);
     
     return new MonitoredUrl(data);
   }
