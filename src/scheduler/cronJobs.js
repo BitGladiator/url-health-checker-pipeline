@@ -58,12 +58,13 @@ class CronScheduler {
     }
   }
   stopAllJobs() {
-    for (const [id, job] of this.jobs) {
+    for (const [, job] of this.jobs) {  
       job.stop();
     }
     this.jobs.clear();
     logger.info("All monitoring jobs stopped");
   }
+  
   getJobsStatus() {
     const status = [];
     for (const [id, job] of this.jobs) {
