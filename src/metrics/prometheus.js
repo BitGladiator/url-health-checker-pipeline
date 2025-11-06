@@ -5,10 +5,10 @@ const register = new client.Registry();
 client.collectDefaultMetrics({ register });
 
 const httpDuration = new client.Histogram({
-  name: "url_check_duration_seconds", 
+  name: "url_check_duration_seconds",
   help: "Duration of URL health checks",
-  labelNames: ["url", "status"], 
-  buckets: [0.1, 0.5, 1, 2, 5], 
+  labelNames: ["url", "status"],
+  buckets: [0.1, 0.5, 1, 2, 5],
 });
 
 register.registerMetric(httpDuration);

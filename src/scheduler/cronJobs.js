@@ -1,17 +1,17 @@
-const cron = require('node-cron');
-const { MonitoredUrl } = require('../models/monitoredUrl');
-const { addUrlToQueue } = require('../queue/queue');
-const logger = require('../utils/logger');
+const cron = require("node-cron");
+const { MonitoredUrl } = require("../models/monitoredUrl");
+const { addUrlToQueue } = require("../queue/queue");
+const logger = require("../utils/logger");
 
 class CronScheduler {
   constructor() {
     this.jobs = new Map();
   }
   async startAllJobs() {
-    logger.info('Starting cron scheduler for URL monitoring...');
-    
+    logger.info("Starting cron scheduler for URL monitoring...");
+
     const activeUrls = await MonitoredUrl.getAllActive();
-    
+
     for (const urlConfig of activeUrls) {
       this.scheduleUrlCheck(urlConfig);
     }
@@ -22,21 +22,25 @@ class CronScheduler {
     const { id, url, checkInterval } = urlConfig;
     this.stopJob(id);
     const cronExpression = `*/${checkInterval} * * * *`;
-    
+
     logger.info(`Scheduling ${url} to check every ${checkInterval} minutes`);
-    
-    const job = cron.schedule(cronExpression, async () => {
-      try {
-        logger.info(`Cron triggered check for: ${url}`);
-        await addUrlToQueue(url, { monitoredUrlId: id });
-      } catch (error) {
-        logger.error(`Failed to queue URL check: ${error.message}`);
+
+    const job = cron.schedule(
+      cronExpression,
+      async () => {
+        try {
+          logger.info(`Cron triggered check for: ${url}`);
+          await addUrlToQueue(url, { monitoredUrlId: id });
+        } catch (error) {
+          logger.error(`Failed to queue URL check: ${error.message}`);
+        }
+      },
+      {
+        scheduled: true,
+        timezone: process.env.TIMEZONE || "UTC",
       }
-    }, {
-      scheduled: true,
-      timezone: process.env.TIMEZONE || 'UTC'
-    });
-    
+    );
+
     this.jobs.set(id, job);
   }
   stopJob(id) {
@@ -58,7 +62,7 @@ class CronScheduler {
       job.stop();
     }
     this.jobs.clear();
-    logger.info('All monitoring jobs stopped');
+    logger.info("All monitoring jobs stopped");
   }
   getJobsStatus() {
     const status = [];
@@ -66,7 +70,7 @@ class CronScheduler {
       status.push({
         id,
         running: job.running || false,
-        scheduled: true
+        scheduled: true,
       });
     }
     return status;

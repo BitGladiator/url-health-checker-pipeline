@@ -1,12 +1,16 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
 
-const { submitUrlCheck, getUrlStatus, getUrlHistory } = require('../controllers/url.controller.js');
+const {
+  submitUrlCheck,
+  getUrlStatus,
+  getUrlHistory,
+} = require("../controllers/url.controller.js");
 
-router.post('/check', submitUrlCheck);
+router.post("/check", submitUrlCheck);
 
-router.get('/status', getUrlStatus);
+router.get("/status", getUrlStatus);
 
-router.get('/history', getUrlHistory);
+router.get("/history", getUrlHistory);
 
 module.exports = router;
