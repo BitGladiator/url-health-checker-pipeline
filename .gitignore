@@ -1,30 +1,30 @@
-# Node.js
+
 node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Environment variables
+
 .env
 
-# Logs
+
 logs/
 *.log
 
-# OS/System
+
 .DS_Store
 Thumbs.db
 
-# Editor folders
+
 .vscode/
 .idea/
 
-# Coverage (if using Jest or coverage tools)
+
 coverage/
 
-# Redis dump (if persisted locally)
+
 dump.rdb
 *.rdb
 
-# Optional: JetBrains IDEs
+
 *.i*
