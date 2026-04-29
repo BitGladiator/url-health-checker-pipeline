@@ -16,23 +16,6 @@
 
 ---
 
-## Table of Contents
-
-- [Features](#-features)
-- [Architecture](#️-architecture)
-- [Quick Start](#-quick-start)
-- [Configuration](#-configuration)
-- [Monitoring & Observability](#-monitoring--observability)
-- [Email Alerts](#-email-alerts)
-- [API Reference](#-api-reference)
-- [Docker Deployment](#-docker-deployment)
-- [Testing](#-testing)
-- [Development](#️-development)
-- [Performance](#-performance)
-- [Contributing](#-contributing)
-
----
-
 ##Features
 
 ###  **Core Functionality**
