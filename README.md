@@ -291,8 +291,6 @@ npm run test -- --coverage
 # Run specific test file
 npm test -- urlCheck.test.js
 
-# Run tests in watch mode
-npm test -- --watch
 ```
 
 ### **CI/CD Pipeline**
