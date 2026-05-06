@@ -450,6 +450,5 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 ---
 
 <div align="center">
-  <h3> If this project helped you, please consider giving it a star! ⭐</h3>
   <p>Built with ❤️ by <a href="https://github.com/bitgladiator">Karan Sharma</a></p>
 </div>
